@@ -1,5 +1,5 @@
-import 'package:eventesports/screens/cadastro_eventos.dart';
 import 'package:flutter/material.dart';
+import 'package:loja/screens/cadastro_eventos.dart';
 
 void main() => runApp(MyApp());
 
