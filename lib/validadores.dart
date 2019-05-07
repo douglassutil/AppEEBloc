@@ -45,8 +45,8 @@ mixin Validators {
 
   var nomeEventoValidator = StreamTransformer<String,String>.fromHandlers(
     handleData: (nomeEvento,sink){
-      if(nomeEvento.length > 30)
-        sink.addError("O nome não pode ter mais de 30 caracteres!");
+      if(nomeEvento.length > 50)
+        sink.addError("O nome não pode ter mais de 50 caracteres!");
       else{
         sink.add(nomeEvento);        
       }

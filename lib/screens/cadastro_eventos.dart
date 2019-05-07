@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_masked_text/flutter_masked_text.dart';
 import 'package:loja/blocs/cadastro_eventos_bloc.dart';
 
 class CadastroEventos extends StatefulWidget {
@@ -8,34 +9,65 @@ class CadastroEventos extends StatefulWidget {
 
 class _CadastroEventosState extends State<CadastroEventos> {
 
+  TextEditingController nomeController = TextEditingController();
+  var horaController = MaskedTextController(text: 'HH:mm',mask: '00:00');
+  var dataController = MaskedTextController(text: '',mask: '00/00/0000');
+  TextEditingController minController = TextEditingController();
+  TextEditingController maxController = TextEditingController();
+  TextEditingController esporteController = TextEditingController();
+  TextEditingController descricaoController = TextEditingController();
+
+  final _formKey = GlobalKey<FormState>();
+
   CadastroEventosBloc _cadastroEventosBloc;
 
   @override
   void initState() {
-    _cadastroEventosBloc = CadastroEventosBloc();
     super.initState();
+    nomeController.addListener(setName);
+    horaController.addListener(setHora);
+    dataController.addListener(setData);
+    minController.addListener(setMin);
+    maxController.addListener(setMax);
+    esporteController.addListener(setEsporte);
+    descricaoController.addListener(setDescricao);
+    _cadastroEventosBloc = CadastroEventosBloc();
   }
 
   @override
   void dispose() {
+    nomeController.dispose();
+    horaController.dispose();
+    dataController.dispose();
+    minController.dispose();
+    maxController.dispose();
+    esporteController.dispose();
+    descricaoController.dispose();
     _cadastroEventosBloc.dispose();
     super.dispose();
   }
 
+  setName() => _cadastroEventosBloc.nomeEventoEvent.add(nomeController.text);
+  setHora() => _cadastroEventosBloc.horaEventoEvent.add(horaController.text);
+  setData() => _cadastroEventosBloc.dataEventoEvent.add(dataController.text);
+  setMin() => _cadastroEventosBloc.numeroMinEventoEvent.add(minController.text);
+  setMax() => _cadastroEventosBloc.numeroMaxEventoEvent.add(maxController.text);
+  setEsporte() => _cadastroEventosBloc.esporteEventoEvent.add(esporteController.text);
+  setDescricao() => _cadastroEventosBloc.descricaoEventoEvent.add(descricaoController.text);
+  
+
   @override
   Widget build(BuildContext context) {
-
-    final _formKeyCadastroEventos = GlobalKey<FormState>();
-
+    
     var contentPaddingVerticalDropDown = MediaQuery.of(context).size.width * 0.03;
     var contentPaddingVertical = MediaQuery.of(context).size.width * 0.035;
     var contentPaddingHorizontal = MediaQuery.of(context).size.width * 0.02;
     
     final paddingBotton = MediaQuery.of(context).size.width * 0.02;
     final paddingBottonError = (MediaQuery.of(context).size.width * 0.02) + 22.0;  
-    
-    return Scaffold(
 
+    return Scaffold(
+      
       appBar: AppBar(
         title: Text("Cadastro de Eventos"),
         centerTitle: true,
@@ -43,7 +75,7 @@ class _CadastroEventosState extends State<CadastroEventos> {
 
       body: SingleChildScrollView(
         child:Form(
-          key: _formKeyCadastroEventos,
+          key: _formKey,
           child: Column(
             children: <Widget>[
 
@@ -61,7 +93,7 @@ class _CadastroEventosState extends State<CadastroEventos> {
                     height: MediaQuery.of(context).size.width * 0.48,
                     margin: EdgeInsets.fromLTRB(
                         MediaQuery.of(context).size.width * 0.15,
-                        MediaQuery.of(context).size.width * 0.03,
+                        snapshot.data == null ? 0 : MediaQuery.of(context).size.width * 0.03,
                         MediaQuery.of(context).size.width * 0.15,
                         MediaQuery.of(context).size.width * 0.0),
                         
@@ -119,8 +151,8 @@ class _CadastroEventosState extends State<CadastroEventos> {
                       MediaQuery.of(context).size.width * 0.01,
                       paddingBotton
                     ),
-                    child: TextField(
-                      onChanged: (s) => _cadastroEventosBloc.nomeEventoEvent.add(s),
+                    child: TextFormField(
+                      controller: nomeController,
                       keyboardType: TextInputType.text,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(),
@@ -132,6 +164,13 @@ class _CadastroEventosState extends State<CadastroEventos> {
                           horizontal: contentPaddingHorizontal
                         ),
                       ),
+                      validator: (value) {
+                        if (value.length >= 50) {
+                          return 'Digite no máximo 50 caracteres!';
+                        }else if(value.isEmpty){
+                          return 'Digite o Nome do Evento!';
+                        }
+                      }
                     )
                   );
                 },
@@ -153,9 +192,9 @@ class _CadastroEventosState extends State<CadastroEventos> {
                           MediaQuery.of(context).size.width * 0.01,
                           paddingBotton
                         ),
-                        child: TextField(
-                          controller: _cadastroEventosBloc.horaController,
-                          onSubmitted:(s) => _cadastroEventosBloc.horaEventoValidador(s),
+                        child: TextFormField(
+                          controller: horaController,
+                          onFieldSubmitted: (s) => _cadastroEventosBloc.horaEventoValidador(s),
                           maxLength: 5,
                           keyboardType: TextInputType.number,
                           decoration: InputDecoration(
@@ -170,6 +209,13 @@ class _CadastroEventosState extends State<CadastroEventos> {
                               horizontal: contentPaddingHorizontal
                             ),
                           ),
+                          validator: (value) {
+                            if (value.length != 5) {
+                              return 'Horário inválido';
+                            }else if(value.isEmpty){
+                              return 'Digite um Horário!';
+                            }
+                          },
                         ),
                       );
                     },
@@ -188,9 +234,9 @@ class _CadastroEventosState extends State<CadastroEventos> {
                           MediaQuery.of(context).size.width * 0.01,
                           paddingBotton
                         ),
-                        child: TextField(
-                          controller: _cadastroEventosBloc.dataController,
-                          onSubmitted:(s) => _cadastroEventosBloc.dataEventoValidador(s),
+                        child: TextFormField(
+                          controller: dataController,
+                          onFieldSubmitted: (s) => _cadastroEventosBloc.dataEventoValidador(s),
                           maxLength: 10,
                           keyboardType: TextInputType.number,
                           decoration: InputDecoration(
@@ -205,7 +251,13 @@ class _CadastroEventosState extends State<CadastroEventos> {
                               horizontal: contentPaddingHorizontal
                             ),
                           ),
-
+                          validator: (value) {
+                            if (value.length < 10) {
+                              return 'Data inválida';
+                            }else if(value.isEmpty){
+                              return 'Digite a Data do Evento!';
+                            }
+                          },
                         ),
                       );
                     },
@@ -229,6 +281,8 @@ class _CadastroEventosState extends State<CadastroEventos> {
                             MediaQuery.of(context).size.width * 0.01,
                             paddingBotton),
                         child: TextFormField(
+                          controller: minController,
+                          onFieldSubmitted: (s) => _cadastroEventosBloc.numeroMinEventoEvent.add(s),
                           keyboardType: TextInputType.number,
                           maxLength: 8,
                           decoration: InputDecoration(
@@ -243,6 +297,11 @@ class _CadastroEventosState extends State<CadastroEventos> {
                               horizontal: contentPaddingHorizontal
                             ),
                           ),
+                          validator: (value) {
+                            if(value.isEmpty){
+                              return '0 (zero) para Ilimitado';
+                            }
+                          },
                         ),
                       );
                     },
@@ -260,6 +319,8 @@ class _CadastroEventosState extends State<CadastroEventos> {
                             MediaQuery.of(context).size.width * 0.01,
                             paddingBotton),
                         child: TextFormField(
+                          controller: maxController,
+                          onFieldSubmitted: (s) => _cadastroEventosBloc.numeroMaxEventoEvent.add(s),
                           keyboardType: TextInputType.number,
                           maxLength: 8,
                           decoration: InputDecoration(
@@ -274,6 +335,11 @@ class _CadastroEventosState extends State<CadastroEventos> {
                               horizontal: contentPaddingHorizontal
                             ),
                           ),
+                          validator: (value) {
+                            if(value.isEmpty){
+                              return '0 (zero) para Ilimitado';
+                            }
+                          },
                         ),
                       );
                     },
@@ -313,6 +379,11 @@ class _CadastroEventosState extends State<CadastroEventos> {
                               value: sexo,
                             );
                           }).toList(),
+                          validator: (value){
+                            if (value != "Masculino" && value != "Feminino" && value != "Unissex") {
+                              return 'Selecione o Sexo';
+                            }
+                          },
                         ),
                       );
                     },
@@ -329,9 +400,10 @@ class _CadastroEventosState extends State<CadastroEventos> {
                             MediaQuery.of(context).size.width * 0.03,
                             MediaQuery.of(context).size.width * 0.01,
                             paddingBotton),
-                        child: TextField(
+                        child: TextFormField(
                           keyboardType: TextInputType.text,
-                          onChanged: (s) => _cadastroEventosBloc.esporteEventoEvent.add(s),
+                          controller: esporteController,
+                          onFieldSubmitted: (s) => _cadastroEventosBloc.esporteEventoEvent.add(s),
                           decoration: InputDecoration(
                             counterText: "",
                             counterStyle: TextStyle(fontSize: 0),
@@ -344,6 +416,11 @@ class _CadastroEventosState extends State<CadastroEventos> {
                               horizontal: contentPaddingHorizontal
                             ),
                           ),
+                          validator: (value){
+                            if (value.isEmpty) {
+                              return 'Digite o Esporte!';
+                            }
+                          },
                         ),
                       );
                     },
@@ -506,11 +583,12 @@ class _CadastroEventosState extends State<CadastroEventos> {
                         MediaQuery.of(context).size.width * 0.03,
                         MediaQuery.of(context).size.width * 0.01,
                         paddingBotton),
-                    child: TextField(
+                    child: TextFormField(
+                      controller: descricaoController,
                       keyboardType: TextInputType.text,
                       maxLines: 4,
                       maxLength: 300,
-                      onChanged: (s) => _cadastroEventosBloc.descricaoEventoEvent.add(s),
+                      onFieldSubmitted: (s) => _cadastroEventosBloc.descricaoEventoEvent.add(s),
                       decoration: InputDecoration(
                         counterText: "",
                         counterStyle: TextStyle(fontSize: 0),
@@ -524,6 +602,13 @@ class _CadastroEventosState extends State<CadastroEventos> {
                           horizontal: contentPaddingHorizontal
                         ),
                       ),
+                      validator: (value) {
+                        if (value.length > 300) {
+                          return 'Máximo 300 caracteres';
+                        }else if(value.isEmpty){
+                          return 'Digite uma Descrição!';
+                        }
+                      },
                     ),
                   );
                 },
@@ -571,8 +656,10 @@ class _CadastroEventosState extends State<CadastroEventos> {
                     ],
                   ),                
                 ),
-                onTap: () => _cadastroEventosBloc.salvar()
-,
+                onTap: (){  if (_formKey.currentState.validate() == true) 
+                              _cadastroEventosBloc.salvar();
+                          }
+
               ),
             ],
           ),

@@ -4,7 +4,6 @@ import 'package:loja/models/cadastro_eventos_model.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:bloc_pattern/bloc_pattern.dart';
 import 'package:loja/validadores.dart';
-import 'package:flutter_masked_text/flutter_masked_text.dart';
 
 
 class CadastroEventosBloc extends Object with Validators implements BlocBase{
@@ -50,19 +49,21 @@ class CadastroEventosBloc extends Object with Validators implements BlocBase{
   void horaEventoValidador(hora) => validaHoraEvento(hora,_horaEventoController);
   void dataEventoValidador(data) => validaDataEvento(data,_dataEventoController);
 
-  var horaController = MaskedTextController(text: 'HH:mm',mask: '00:00');
-  var dataController = MaskedTextController(text: '',mask: '00/00/0000');
-
   List<String> sexo = ['Masculino', 'Feminino', 'Unissex'];
-  File imagemFile;
-
-  Stream<bool> get submitFirstCheck => Observable.combineLatest9(_nomeEventoController, _descricaoEventoController, _horaEventoController, 
-  _dataEventoController, _numeroMinEventoController, _numeroMaxEventoController, _sexoEventoController, _estacionamentoEventoController,
-   _eventoPagoEventoController, (A,B,C,D,E,F,G,H,I) => true);
-
+  File imagemFile;  
+ 
+  Observable<bool> get submitFirstCheck => Observable.combineLatest5(nomeEventoFlux, descricaoEventoFlux,esporteEventoFlux, numeroMaxEventoFlux,dataEventoFlux, (a,b,c,d,e)=>true);
 
   void salvar(){
-    print("Salvar");
+    if ( _nomeEventoController.value == null || _descricaoEventoController.value == null || 
+    _horaEventoController.value == null || _dataEventoController.value == null ||
+    _numeroMinEventoController.value == null || _numeroMaxEventoController.value == null || 
+    _sexoEventoController.value == null || _esporteEventoController.value == null || 
+    _imagemEventoController.value == null )
+    {
+        print("alguém vazio");
+    }
+
   }
 
   void getImage() async {
